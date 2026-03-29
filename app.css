@@ -264,3 +264,57 @@ img{display:block;max-width:100%;height:auto}
 .btn-small:hover{background:#4b5563;color:#fff}
 .btn-remove{background:none;border:none;color:#6b7280;font-size:16px;cursor:pointer;padding:4px 8px;transition:color .2s}
 .btn-remove:hover{color:#ef4444}
+
+
+/* === ComicK Grid Layout === */
+.ck-main{max-width:1200px;margin:0 auto}
+.ck-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;padding:0 4% 16px}
+@media(min-width:640px){.ck-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}}
+@media(min-width:1024px){.ck-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px}}
+
+/* === ComicK Detail Header (cover left + info right) === */
+.ck-detail-header{display:flex;gap:24px;margin-bottom:28px;align-items:flex-start}
+.ck-detail-cover{flex-shrink:0;width:180px}
+.ck-cover-img{width:180px;height:260px;object-fit:cover;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.ck-detail-info{flex:1;min-width:0;padding-top:4px}
+.ck-detail-title{font-size:24px;font-weight:800;color:#fff;margin-bottom:8px;line-height:1.2}
+.ck-detail-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:#9ca3af;margin-bottom:12px}
+.ck-status{color:#34d399;font-weight:600}
+.ck-meta-sep{color:#4b5563}
+.ck-detail-labels{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.ck-label{background:#374151;color:#d1d5db;font-size:11px;padding:4px 10px;border-radius:20px;transition:background .2s;cursor:default}
+.ck-label.accent{background:#1e3a5f;color:#60a5fa}
+.ck-label.premium{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;font-weight:700}
+.ck-detail-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ck-btn-primary{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
+.ck-btn-primary:hover{background:#2563eb}
+.ck-btn-secondary{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;background:#374151;color:#d1d5db;border:1px solid #4b5563;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.ck-btn-secondary:hover{background:#4b5563;color:#fff}
+.ck-btn-secondary.active{background:#3b82f6;color:#fff;border-color:#3b82f6}
+
+@media(max-width:640px){
+  .ck-detail-header{flex-direction:column;align-items:center;text-align:center}
+  .ck-detail-cover{width:140px}
+  .ck-cover-img{width:140px;height:200px}
+  .ck-detail-labels{justify-content:center}
+  .ck-detail-actions{justify-content:center}
+  .ck-detail-meta{justify-content:center}
+}
+
+/* === ComicK Chapter Table === */
+.ck-chapters{margin-top:28px}
+.ck-section-heading{font-size:16px;font-weight:700;color:#e5e7eb;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.ck-section-heading::before{content:'';width:3px;height:18px;background:#3b82f6;border-radius:2px}
+.ck-chapter-list{display:flex;flex-direction:column;gap:2px}
+.ck-chapter-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#1f2937;border-radius:6px;transition:all .15s;cursor:pointer;border:1px solid transparent}
+.ck-chapter-row:hover{background:#263044;border-color:#374151}
+.ck-chapter-row.active{background:#1e3a5f;border-color:#3b82f6}
+.ck-chapter-row.locked{opacity:.55}
+.ck-ch-num{font-size:13px;font-weight:700;color:#60a5fa;min-width:52px}
+.ck-ch-title{flex:1;font-size:13px;color:#d1d5db;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ck-ch-time{font-size:11px;color:#6b7280;white-space:nowrap;min-width:60px;text-align:right}
+.ck-ch-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* === ComicK Player Section === */
+.ck-player-section{margin-bottom:24px}
+.ck-player-section h3{margin-bottom:10px}
