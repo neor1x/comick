@@ -50,18 +50,14 @@
     <script src='https://unpkg.com/htm@3.1.1/dist/htm.umd.js'/>
     <script>
     //<![CDATA[
-    // Loader: resolves latest commit from GitHub API, then loads from jsDelivr with exact hash (no stale cache)
+    // Loader: loads app.css and app.js from GitHub raw (always latest commit, no cache)
     (function(){
       var repo='neor1x/comick';
-      fetch('https://api.github.com/repos/'+repo+'/commits/main',{headers:{Accept:'application/vnd.github.v3.sha'}})
-        .then(function(r){return r.text()})
-        .then(function(sha){
-          var base='https://cdn.jsdelivr.net/gh/'+repo+'@'+sha.trim().slice(0,7)+'/';
-          document.getElementById('app-css').href=base+'app.css';
-          var s=document.createElement('script');
-          s.src=base+'app.js';
-          document.body.appendChild(s);
-        });
+      var base='https://raw.githubusercontent.com/'+repo+'/main/';
+      document.getElementById('app-css').href=base+'app.css';
+      var s=document.createElement('script');
+      s.src=base+'app.js';
+      document.body.appendChild(s);
     })();
     //]]>
     </script>
