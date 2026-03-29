@@ -72,7 +72,7 @@
   }
 
   // ─── User Data ────────────────────────────────────────────────
-  var STORAGE_KEY = 'animeflix_user';
+  var STORAGE_KEY = 'comick_user';
 
   function loadLocal() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; } }
   function saveLocal(data) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {} }
@@ -754,7 +754,7 @@
     </div>`;
   }
 
-  function AboutPage(){return html`<div class="static-page"><h1>About</h1><div class="static-content"><p>AnimeFlix is a lightweight anime streaming and download index powered by Google Blogger.</p><p>Premium members get access to exclusive episodes, rank badges, and commenting privileges.</p></div></div>`;}
+  function AboutPage(){return html`<div class="static-page"><h1>About</h1><div class="static-content"><p>ComicK is a lightweight anime streaming and download index powered by Google Blogger.</p><p>Track your favorites, discover new series, and enjoy a clean reading experience.</p></div></div>`;}
 
   function TimetablePage(){
     var s=useState([]),all=s[0],setAll=s[1];var s2=useState(true),loading=s2[0],setLoading=s2[1];
@@ -826,7 +826,7 @@
     },[userMenu]);
 
     return html`<header class="header">
-      <a href="#/" class="logo">Anime<span>Flix</span></a>
+      <a href="#/" class="logo">Comic<span>K</span></a>
       <nav class="nav-links ${menuOpen?'open':''}">
         ${links.map(function(lnk){
           var active=route===lnk.href.slice(1)||(lnk.href==='#/'&&route==='/');
@@ -876,11 +876,11 @@
     else if(route.indexOf('/search')===0){var sq=decodeURIComponent(route.replace('/search/','').replace('/search',''));page=html`<${SearchPage} query=${sq}/>`;}
     else if(route.indexOf('/title/')===0){var titleSlug=decodeURIComponent(route.replace('/title/',''));page=html`<${DetailPage} slug=${titleSlug}/>`;}
     else page=html`<div class="static-page"><h1>404</h1><p>Page not found.</p><a href="#/">← Home</a></div>`;
-    return html`<div class="app"><${Navbar} route=${route}/>${page}<footer class="footer">Powered by Blogger · Built with Preact</footer></div>`;
+    return html`<div class="app"><${Navbar} route=${route}/>${page}<footer class="footer">© ComicK · Powered by Blogger</footer></div>`;
   }
 
   render(html`<${App}/>`, document.getElementById('root'));
 
-  var ld={'@context':'https://schema.org','@type':'WebSite',name:'AnimeFlix',url:window.location.origin,potentialAction:{'@type':'SearchAction',target:window.location.origin+'#/search/{search_term_string}','query-input':'required name=search_term_string'}};
+  var ld={'@context':'https://schema.org','@type':'WebSite',name:'ComicK',url:window.location.origin,potentialAction:{'@type':'SearchAction',target:window.location.origin+'#/search/{search_term_string}','query-input':'required name=search_term_string'}};
   var sc=document.createElement('script');sc.type='application/ld+json';sc.textContent=JSON.stringify(ld);document.head.appendChild(sc);
 })();

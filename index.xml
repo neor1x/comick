@@ -6,7 +6,7 @@
     <meta content='width=device-width, initial-scale=1.0' name='viewport'/>
     <b:include data='blog' name='all-head-content'/>
     <title><data:blog.pageTitle/></title>
-    <meta content='Watch anime online - Ongoing, Movies, OVA and Finished series' name='description'/>
+    <meta content='ComicK - Track and read manga, manhwa, manhua online' name='description'/>
     <meta content='index, follow' name='robots'/>
     <link href='https://fonts.googleapis.com' rel='preconnect'/>
     <link crossorigin='' href='https://fonts.gstatic.com' rel='preconnect'/>
@@ -52,7 +52,7 @@
     //<![CDATA[
     // Loader: resolves latest commit from GitHub API, then loads from jsDelivr with exact hash (no stale cache)
     (function(){
-      var repo='neor1x/animeflix-blogger';
+      var repo='neor1x/comick';
       fetch('https://api.github.com/repos/'+repo+'/commits/main',{headers:{Accept:'application/vnd.github.v3.sha'}})
         .then(function(r){return r.text()})
         .then(function(sha){
