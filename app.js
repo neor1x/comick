@@ -97,7 +97,7 @@ function mdRender(t){if(!t)return'';return t.replace(/&/g,'&amp;').replace(/</g,
     location.replace(location.protocol+'//'+location.host+'/'+(location.hash||''));
   }
 })();
-function route(){return location.hash.slice(1)||'/';}
+function route(){try{return decodeURIComponent(location.hash.slice(1))||'/';}catch(e){return location.hash.slice(1)||'/';}}
 function go(p){location.hash='#'+p;window.scrollTo(0,0);}
 function useRoute(){var s=useState(route()),r=s[0],set=s[1];useEffect(function(){var fn=function(){set(route());};addEventListener('hashchange',fn);return function(){removeEventListener('hashchange',fn);};},[]);return r;}
 
@@ -199,7 +199,7 @@ function Feed(p){
   return html`<div class="feed">${posts.map(function(p){
     var slug=baseName(p.title).replace(/[^a-zA-Z0-9\u0400-\u04FF\u1800-\u18AF]+/g,'-').replace(/^-|-$/g,'').toLowerCase();
     var ch=(p.title.match(/(\d+)/)||[])[1]||'';
-    return html`<a class="feed-row" href=${'#/title/'+encodeURIComponent(slug)} key=${p.id}>
+    return html`<a class="feed-row" href=${'#/title/'+slug} key=${p.id}>
       <img class="feed-thumb" src=${p.th} alt=""/>
       <div class="feed-info"><div class="feed-name">${baseName(p.title)}</div><div class="feed-meta">${ch&&html`<span class="feed-ch">Ch. ${ch}</span>`}<span>${ago(p.upd||p.pub)}</span></div></div>
     </a>`;
@@ -213,7 +213,7 @@ function Popular(){
   return html`<div>
     <div class="ch-head">Popular Ongoing</div>
     ${busy?html`<${Skel} n=${3}/>`:html`<div class="ranked">${items.map(function(it,i){
-      return html`<a class="ranked-row" href=${'#/title/'+encodeURIComponent(it.slug)} key=${it.slug}>
+      return html`<a class="ranked-row" href=${'#/title/'+it.slug} key=${it.slug}>
         <span class="ranked-num">${i+1}</span><img class="ranked-img" src=${it.th} alt=""/><span class="ranked-name">${it.title}</span>
       </a>`;
     })}</div>`}
@@ -308,7 +308,7 @@ function Search(p){
   useEffect(function(){setB(true);feedAll().then(function(a){all.current=group(a);if(iq)filter(iq);setB(false);});},[]);
   var filter=useCallback(function(v){if(!v.trim()){setR([]);return;}setR(all.current.filter(function(g){return match(g.title,v)||g.labels.some(function(l){return match(l,v);});}));},[]);
   var inp=useCallback(function(e){var v=e.target.value;setQ(v);filter(v);},[]);
-  var click=useCallback(function(it){go('/title/'+encodeURIComponent(it.slug));},[]);
+  var click=useCallback(function(it){go('/title/'+it.slug);},[]);
   return html`<div class="search-wrap">
     <div class="search-box"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="search" placeholder="Search titles, genres..." value=${q} onInput=${inp} autofocus/></div>
     ${busy?html`<div class="cgrid"><${Skel} n=${6}/></div>`:res.length?html`<div class="cgrid">${res.map(function(it){return html`<${Card} key=${it.slug} item=${it} onClick=${click} sub=${it.eps.length+' chaps'}/>`})}</div>`:q.trim()?html`<p style="color:#3d4155">No results for "${q}"</p>`:html`<p style="color:#2a2d3a">Start typing to search...</p>`}
@@ -322,7 +322,7 @@ function Timetable(){
   var s=useState([]),all=s[0],set=s[1];var s2=useState(true),busy=s2[0],setB=s2[1];
   useEffect(function(){feedLabel('Ongoing').then(function(ps){var g=group(ps);g.sort(function(a,b){return a.upd<b.upd?1:-1;});set(g);setB(false);});},[]);
   return html`<div class="page"><h1>Timetable</h1><p class="page-sub">Currently airing, sorted by latest update</p>
-    ${busy?html`<div class="cgrid"><${Skel} n=${6}/></div>`:html`<div class="feed">${all.map(function(it){var lat=it.eps[it.eps.length-1];return html`<a class="feed-row" href=${'#/title/'+encodeURIComponent(it.slug)} key=${it.slug}><img class="feed-thumb" src=${it.th} alt=""/><div class="feed-info"><div class="feed-name">${it.title}</div><div class="feed-meta">${it.eps.length} ch · ${ago(lat?lat.upd||lat.pub:'')}</div></div></a>`;})}</div>`}
+    ${busy?html`<div class="cgrid"><${Skel} n=${6}/></div>`:html`<div class="feed">${all.map(function(it){var lat=it.eps[it.eps.length-1];return html`<a class="feed-row" href=${'#/title/'+it.slug} key=${it.slug}><img class="feed-thumb" src=${it.th} alt=""/><div class="feed-info"><div class="feed-name">${it.title}</div><div class="feed-meta">${it.eps.length} ch · ${ago(lat?lat.upd||lat.pub:'')}</div></div></a>`;})}</div>`}
   </div>`;
 }
 
@@ -330,7 +330,7 @@ function Releases(){
   var s=useState([]),posts=s[0],set=s[1];var s2=useState(true),busy=s2[0],setB=s2[1];
   useEffect(function(){feedAll().then(function(a){var sorted=a.slice().sort(function(a,b){return a.pub<b.pub?1:-1;});set(sorted.slice(0,50));setB(false);});},[]);
   return html`<div class="page"><h1>Latest Releases</h1><p class="page-sub">Most recent uploads</p>
-    ${busy?html`<div class="cgrid"><${Skel} n=${6}/></div>`:html`<div class="feed">${posts.map(function(p){var slug=baseName(p.title).replace(/[^a-zA-Z0-9\u0400-\u04FF\u1800-\u18AF]+/g,'-').replace(/^-|-$/g,'').toLowerCase();return html`<a class="feed-row" href=${'#/title/'+encodeURIComponent(slug)} key=${p.id}><img class="feed-thumb" src=${p.th} alt=""/><div class="feed-info"><div class="feed-name">${p.title}</div><div class="feed-meta">${ago(p.pub)} · ${p.labels.filter(function(l){return C.sectionLabels.indexOf(l)!==-1;}).join(', ')}</div></div></a>`;})}</div>`}
+    ${busy?html`<div class="cgrid"><${Skel} n=${6}/></div>`:html`<div class="feed">${posts.map(function(p){var slug=baseName(p.title).replace(/[^a-zA-Z0-9\u0400-\u04FF\u1800-\u18AF]+/g,'-').replace(/^-|-$/g,'').toLowerCase();return html`<a class="feed-row" href=${'#/title/'+slug} key=${p.id}><img class="feed-thumb" src=${p.th} alt=""/><div class="feed-info"><div class="feed-name">${p.title}</div><div class="feed-meta">${ago(p.pub)} · ${p.labels.filter(function(l){return C.sectionLabels.indexOf(l)!==-1;}).join(', ')}</div></div></a>`;})}</div>`}
   </div>`;
 }
 
@@ -361,12 +361,12 @@ function Profile(){
     ${sec==='bm'&&html`
       <div class="tabs">${C.bmCats.map(function(c){var n=(data.bm[c]||[]).length;return html`<button class=${'tab sm'+(tab===c?' on':'')} key=${c} onClick=${function(){setT(c);}}>${c} (${n})</button>`;})}</div>
       <div class="feed">${(data.bm[tab]||[]).length===0?html`<p style="color:#3d4155;padding:16px 0">Empty</p>`:
-        (data.bm[tab]||[]).map(function(b){return html`<div class="feed-row" key=${b.s}><a href=${'#/title/'+encodeURIComponent(b.s)} style="display:contents;color:inherit"><img class="feed-thumb" src=${b.th} alt=""/><div class="feed-info"><div class="feed-name">${b.t}</div></div></a><button class="btn-x" onClick=${function(){bmRm(b.s);refresh();}}>✕</button></div>`;})}</div>
+        (data.bm[tab]||[]).map(function(b){return html`<div class="feed-row" key=${b.s}><a href=${'#/title/'+b.s} style="display:contents;color:inherit"><img class="feed-thumb" src=${b.th} alt=""/><div class="feed-info"><div class="feed-name">${b.t}</div></div></a><button class="btn-x" onClick=${function(){bmRm(b.s);refresh();}}>✕</button></div>`;})}</div>
     `}
     ${sec==='hist'&&html`
       <div style="display:flex;justify-content:flex-end;margin-bottom:8px">${data.hist.length>0&&html`<button class="btn-sm" onClick=${function(){var d=udata();d.hist=[];usave(d);refresh();}}>Clear</button>`}</div>
       <div class="feed">${data.hist.length===0?html`<p style="color:#3d4155;padding:16px 0">No history</p>`:
-        data.hist.map(function(h){return html`<a class="feed-row" href=${'#/title/'+encodeURIComponent(h.s)} key=${h.s+h.at}><img class="feed-thumb" src=${h.th} alt=""/><div class="feed-info"><div class="feed-name">${h.t}</div><div class="feed-meta">${h.ep||''} · ${ago(new Date(h.at).toISOString())}</div></div></a>`;})}</div>
+        data.hist.map(function(h){return html`<a class="feed-row" href=${'#/title/'+h.s} key=${h.s+h.at}><img class="feed-thumb" src=${h.th} alt=""/><div class="feed-info"><div class="feed-name">${h.t}</div><div class="feed-meta">${h.ep||''} · ${ago(new Date(h.at).toISOString())}</div></div></a>`;})}</div>
     `}
   </div>`;
 }
@@ -431,7 +431,7 @@ function Nav(p){
 /* ── App ────────────────────────────────────────────────── */
 function App(){
   var r=useRoute();
-  var oc=useCallback(function(it){go('/title/'+encodeURIComponent(it.slug));},[]);
+  var oc=useCallback(function(it){go('/title/'+it.slug);},[]);
   var pg;
   if(r==='/'||r==='')pg=html`<${Home} onClick=${oc}/>`;
   else if(r==='/about')pg=html`<${About}/>`;
@@ -441,8 +441,8 @@ function App(){
   else if(r==='/subscribe')pg=html`<${Subscribe}/>`;
   else if(r==='/signin')pg=html`<${SignIn}/>`;
   else if(r==='/admin')pg=html`<${Admin}/>`;
-  else if(r.indexOf('/search')===0){var q=decodeURIComponent(r.replace('/search/','').replace('/search',''));pg=html`<${Search} q=${q}/>`;}
-  else if(r.indexOf('/title/')===0){var slug=decodeURIComponent(r.replace('/title/',''));pg=html`<${Detail} slug=${slug}/>`;}
+  else if(r.indexOf('/search')===0){var q=r.replace('/search/','').replace('/search','');pg=html`<${Search} q=${q}/>`;}
+  else if(r.indexOf('/title/')===0){var slug=r.replace('/title/','');pg=html`<${Detail} slug=${slug}/>`;}
   else pg=html`<div class="page"><h1>404</h1><p>Page not found.</p><a href="#/" style="color:#6c8cff">← Home</a></div>`;
   return html`<div class="app-wrap"><${Nav} route=${r}/>${pg}<footer class="foot">© ComicK · Powered by Blogger</footer></div>`;
 }
