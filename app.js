@@ -7,7 +7,7 @@ var html=htm.bind(h);
 
 /* ── Config ─────────────────────────────────────────────── */
 var C={
-  blogUrl:location.origin,
+  blogUrl:(function(){var o=location.origin;if(location.pathname!=='/')o=location.protocol+'//'+location.host;return o;})(),
   sections:[
     {label:'Ongoing',title:'Ongoing Series'},
     {label:'Finished',title:'Completed'},
@@ -88,9 +88,27 @@ function cmtPost(slug,u,txt){if(!fbOk||!fbDb||!u)return Promise.reject();return 
 function mdRender(t){if(!t)return'';return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`(.+?)`/g,'<code>$1</code>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>').replace(/\n/g,'<br/>');}
 
 /* ── Router ─────────────────────────────────────────────── */
+// On Blogger, ensure we stay on the root page for SPA routing.
+// If user lands on a Blogger subpage (e.g. /2019/09/post.html), redirect to root.
+(function(){
+  var p=location.pathname;
+  // Only redirect if on a Blogger post/archive page (has year/month pattern or .html)
+  if(p.match(/\/\d{4}\//)|| (p.indexOf('.html')!==-1 && p!=='/index.html')){
+    location.replace(location.protocol+'//'+location.host+'/'+(location.hash||''));
+  }
+})();
 function route(){return location.hash.slice(1)||'/';}
-function go(p){location.hash=p;}
+function go(p){location.hash='#'+p;window.scrollTo(0,0);}
 function useRoute(){var s=useState(route()),r=s[0],set=s[1];useEffect(function(){var fn=function(){set(route());};addEventListener('hashchange',fn);return function(){removeEventListener('hashchange',fn);};},[]);return r;}
+
+// Global click handler: intercept all <a href="#/..."> clicks so Blogger doesn't navigate away
+document.addEventListener('click',function(e){
+  var a=e.target.closest('a[href^="#/"]');
+  if(!a)return;
+  e.preventDefault();
+  e.stopPropagation();
+  go(a.getAttribute('href').slice(1));
+});
 
 /* ── Blogger Feed ───────────────────────────────────────── */
 var fc={},apc=null;
