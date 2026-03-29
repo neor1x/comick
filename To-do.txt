@@ -1,8 +1,0 @@
-1. The same titles should have only one entry on the index page.
-2. The titles should have dedicated info page, not popup modal.
-3. The search section should work with query input even if the exact word is not input.
-4. Make the slider section draggable when cursor is clicked.
-5. Add navbar, includes:
-    - About
-    - Timetable
-    - Releases
