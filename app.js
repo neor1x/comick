@@ -290,23 +290,106 @@
 
   function SkeletonCards(props) { return html`${Array.from({length:props.count},function(_,i){return html`<div key=${i} class="skeleton skeleton-card"></div>`;})}`; }
 
-  // ─── Home Section (grid layout like comick.io) ────────────────
-  function Section(props) {
+  // ─── Draggable horizontal scroll ────────────────────────────
+  function useDrag(ref) {
+    var state = useRef({ isDown:false, startX:0, scrollLeft:0, moved:false });
+    var onMouseDown = useCallback(function(e) { var el=ref.current; if(!el)return; state.current={isDown:true,moved:false,startX:e.pageX-el.offsetLeft,scrollLeft:el.scrollLeft}; el.style.cursor='grabbing'; el.style.userSelect='none'; },[]);
+    var onEnd = useCallback(function() { state.current.isDown=false; if(ref.current){ref.current.style.cursor='grab';ref.current.style.userSelect='';} },[]);
+    var onMouseMove = useCallback(function(e) { if(!state.current.isDown)return; e.preventDefault(); var el=ref.current; if(!el)return; var walk=(e.pageX-el.offsetLeft-state.current.startX)*1.5; if(Math.abs(walk)>5)state.current.moved=true; el.scrollLeft=state.current.scrollLeft-walk; },[]);
+    var wasDragged = useCallback(function() { return state.current.moved; },[]);
+    return { onMouseDown:onMouseDown, onMouseLeave:onEnd, onMouseUp:onEnd, onMouseMove:onMouseMove, wasDragged:wasDragged };
+  }
+
+  // ─── Horizontal scroll card row (comick.io "Recently Added" style) ──
+  function HScrollSection(props) {
     var config=props.config, onCardClick=props.onCardClick;
     var s=useState([]),items=s[0],setItems=s[1]; var s2=useState(true),loading=s2[0],setLoading=s2[1];
+    var trackRef=useRef(); var drag=useDrag(trackRef);
     useEffect(function(){fetchByLabel(config.label).then(function(posts){setItems(groupByTitle(posts));setLoading(false);});},[config.label]);
-    var handleClick=useCallback(function(item){onCardClick(item);},[onCardClick]);
+    var handleClick=useCallback(function(item){if(drag.wasDragged())return;onCardClick(item);},[onCardClick]);
     if(!loading&&items.length===0)return null;
     var isOngoing=config.label==='Ongoing';
     return html`<section class="section" aria-label=${config.title}>
       <div class="section-header"><h2 class="section-title">${config.title}</h2></div>
-      <div class="ck-grid">
+      <div class="ck-hscroll" ref=${trackRef} onMouseDown=${drag.onMouseDown} onMouseLeave=${drag.onMouseLeave} onMouseUp=${drag.onMouseUp} onMouseMove=${drag.onMouseMove}>
         ${loading?html`<${SkeletonCards} count=${8}/>`:items.map(function(item){
-          var sub=isOngoing&&item.episodes.length>0?'Ch. '+((item.episodes[item.episodes.length-1].title.match(/(\d+)/)||[])[1]||item.episodes.length):item.episodes.length+' chapters';
+          var sub=isOngoing&&item.episodes.length>0?'Ch. '+((item.episodes[item.episodes.length-1].title.match(/(\d+)/)||[])[1]||item.episodes.length):item.episodes.length+' chaps';
           return html`<${Card} key=${item.slug} item=${item} onClick=${handleClick} subtitle=${sub}/>`;
         })}
       </div>
     </section>`;
+  }
+
+  // ─── Updates feed (comick.io "Updates" style: rows with cover + chapter + time) ──
+  function UpdatesFeed(props) {
+    var onCardClick=props.onCardClick;
+    var s=useState([]),posts=s[0],setPosts=s[1]; var s2=useState(true),loading=s2[0],setLoading=s2[1];
+    useEffect(function(){
+      fetchAllPosts().then(function(all){
+        var sorted=all.slice().sort(function(a,b){return b.updated>a.updated?1:b.updated<a.updated?-1:0;});
+        setPosts(sorted.slice(0,30));
+        setLoading(false);
+      });
+    },[]);
+    if(loading) return html`<div class="ck-updates-loading"><${SkeletonCards} count=${4}/></div>`;
+    return html`<div class="ck-updates-feed">
+      ${posts.map(function(p){
+        var titleSlug=getBaseName(p.title).replace(/[^a-zA-Z0-9\u0400-\u04FF\u1800-\u18AF]+/g,'-').replace(/^-|-$/g,'').toLowerCase();
+        var chNum=(p.title.match(/(\d+)/)||[])[1]||'';
+        return html`<a class="ck-update-row" href=${'#/title/'+encodeURIComponent(titleSlug)} key=${p.id}>
+          <img class="ck-update-thumb" src=${p.thumbnail} alt=${p.title}/>
+          <div class="ck-update-info">
+            <div class="ck-update-title">${getBaseName(p.title)}</div>
+            <div class="ck-update-meta">
+              ${chNum&&html`<span class="ck-update-ch">Ch. ${chNum}</span>`}
+              <span>${timeAgo(p.updated||p.published)}</span>
+            </div>
+          </div>
+        </a>`;
+      })}
+    </div>`;
+  }
+
+  // ─── Popular Ongoing ranked list (comick.io sidebar style) ──
+  function PopularOngoing(props) {
+    var onCardClick=props.onCardClick;
+    var s=useState([]),items=s[0],setItems=s[1]; var s2=useState(true),loading=s2[0],setLoading=s2[1];
+    useEffect(function(){
+      fetchByLabel('Ongoing').then(function(posts){
+        var grouped=groupByTitle(posts);
+        grouped.sort(function(a,b){return b.episodes.length-a.episodes.length;});
+        setItems(grouped.slice(0,12));
+        setLoading(false);
+      });
+    },[]);
+    return html`<div class="ck-popular-list">
+      <h3 class="ck-section-heading">Popular Ongoing</h3>
+      ${loading?html`<${SkeletonCards} count=${3}/>`:items.map(function(item,i){
+        return html`<a class="ck-popular-row" href=${'#/title/'+encodeURIComponent(item.slug)} key=${item.slug}>
+          <span class="ck-popular-rank">${i+1}</span>
+          <img class="ck-popular-thumb" src=${item.thumbnail} alt=${item.title}/>
+          <span class="ck-popular-name">${item.title}</span>
+        </a>`;
+      })}
+    </div>`;
+  }
+
+  // ─── Home Page (comick.io layout) ─────────────────────────────
+  function HomePage(props) {
+    var onCardClick=props.onCardClick;
+    return html`<main class="ck-main">
+      <${HScrollSection} config=${CONFIG.sections[0]} onCardClick=${onCardClick}/>
+      <${HScrollSection} config=${CONFIG.sections[3]} onCardClick=${onCardClick}/>
+      <${HScrollSection} config=${CONFIG.sections[1]} onCardClick=${onCardClick}/>
+      <${HScrollSection} config=${CONFIG.sections[2]} onCardClick=${onCardClick}/>
+      <div class="section">
+        <div class="section-header"><h2 class="section-title">Updates</h2></div>
+      </div>
+      <div class="ck-home-split">
+        <${UpdatesFeed} onCardClick=${onCardClick}/>
+        <${PopularOngoing} onCardClick=${onCardClick}/>
+      </div>
+    </main>`;
   }
 
   // ─── Comment Section ──────────────────────────────────────────
@@ -653,7 +736,7 @@
     var route = useRouter();
     var handleCardClick = useCallback(function(item){ navigate('/title/'+encodeURIComponent(item.slug)); },[]);
     var page;
-    if(route==='/'||route==='') page=html`<main class="ck-main">${CONFIG.sections.map(function(sec){return html`<${Section} key=${sec.label} config=${sec} onCardClick=${handleCardClick}/>`})}</main>`;
+    if(route==='/'||route==='') page=html`<${HomePage} onCardClick=${handleCardClick}/>`;
     else if(route==='/about') page=html`<${AboutPage}/>`;
     else if(route==='/timetable') page=html`<${TimetablePage}/>`;
     else if(route==='/releases') page=html`<${ReleasesPage}/>`;
