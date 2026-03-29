@@ -6,58 +6,43 @@
     <meta content='width=device-width, initial-scale=1.0' name='viewport'/>
     <b:include data='blog' name='all-head-content'/>
     <title><data:blog.pageTitle/></title>
-    <meta content='ComicK - Track and read manga, manhwa, manhua online' name='description'/>
+    <meta content='Read manga and manhwa online' name='description'/>
     <meta content='index, follow' name='robots'/>
     <link href='https://fonts.googleapis.com' rel='preconnect'/>
     <link crossorigin='' href='https://fonts.gstatic.com' rel='preconnect'/>
-    <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap' rel='stylesheet'/>
-
-    <b:skin><![CDATA[
-      /* Blogger requires b:skin block - actual styles loaded externally */
-    ]]></b:skin>
-
+    <link href='https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&amp;display=swap' rel='stylesheet'/>
+    <b:skin><![CDATA[/* styles loaded externally */]]></b:skin>
     <link id='app-css' rel='stylesheet'/>
-
     <style>
       /*<![CDATA[*/
-      /* Hide default Blogger chrome */
       .navbar,.blog-pager,.feed-links,.post-feeds,#navbar,#blog-pager,.blog-feeds{display:none!important}
+      body{background:#000;color:#c2c6cc;font-family:'Poppins',system-ui,sans-serif}
       /*]]>*/
     </style>
   </head>
   <body>
-    <!-- Hidden Blogger section (required for feed/admin to work) -->
     <b:section class='navbar' id='navbar' maxwidgets='1' showaddelement='no'>
       <b:widget id='Navbar1' locked='true' title='Navbar' type='Navbar' visible='false'/>
     </b:section>
-
     <div id='root'/>
-
-    <!-- SEO: Blogger still renders post content for crawlers -->
     <b:section class='main' id='main' showaddelement='no'>
       <b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' visible='false'/>
     </b:section>
-
-    <noscript>
-      <p style='color:#fff;text-align:center;padding:40px'>
-        This site requires JavaScript. Please enable it or visit the
-        <a expr:href='data:blog.homepageUrl + &quot;feeds/posts/default&quot;'>RSS feed</a>.
-      </p>
-    </noscript>
-
+    <noscript><p style='color:#fff;text-align:center;padding:40px'>JavaScript required.</p></noscript>
     <script src='https://unpkg.com/preact@10.19.3/dist/preact.umd.js'/>
     <script src='https://unpkg.com/preact@10.19.3/hooks/dist/hooks.umd.js'/>
     <script src='https://unpkg.com/htm@3.1.1/dist/htm.umd.js'/>
     <script>
     //<![CDATA[
-    // Loader: loads app.css and app.js from GitHub raw (always latest commit, no cache)
     (function(){
       var repo='neor1x/comick';
-      var base='https://raw.githubusercontent.com/'+repo+'/main/';
-      document.getElementById('app-css').href=base+'app.css';
-      var s=document.createElement('script');
-      s.src=base+'app.js';
-      document.body.appendChild(s);
+      fetch('https://api.github.com/repos/'+repo+'/commits/main',{headers:{Accept:'application/vnd.github.v3.sha'}})
+        .then(function(r){return r.text()})
+        .then(function(sha){
+          var base='https://cdn.jsdelivr.net/gh/'+repo+'@'+sha.trim().slice(0,7)+'/';
+          document.getElementById('app-css').href=base+'app.css';
+          var s=document.createElement('script');s.src=base+'app.js';document.body.appendChild(s);
+        });
     })();
     //]]>
     </script>
